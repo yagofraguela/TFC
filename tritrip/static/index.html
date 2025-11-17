@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TriTrip – Balances</title>
+</head>
+<body>
+
+    <h1>Balances por Lugar</h1>
+
+    <div>
+        <label for="lugarSelect">Selecciona un lugar:</label>
+        <select id="lugarSelect"></select>
+    </div>
+
+    <h2>Balance</h2>
+    <pre id="resultado"></pre>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8000/api";
+
+        const lugarSelect = document.getElementById("lugarSelect");
+        const resultado = document.getElementById("resultado");
+
+        // 1. Cargar lugares
+        async function cargarLugares() {
+            const res = await fetch(`${API_BASE}/lugares/`);
+            const lugares = await res.json();
+
+            lugarSelect.innerHTML = ""; // limpiar select
+
+            lugares.forEach(lugar => {
+                const option = document.createElement("option");
+                option.value = lugar.id;
+                option.textContent = lugar.nombre;
+                lugarSelect.appendChild(option);
+            });
+
+            if (lugares.length > 0) {
+                cargarBalance(lugares[0].id);
+            }
+        }
+
+        // 2. Cargar balance de un lugar
+        async function cargarBalance(lugarId) {
+            const res = await fetch(`${API_BASE}/lugares/${lugarId}/balance/`);
+            const data = await res.json();
+
+            resultado.textContent = JSON.stringify(data, null, 4);
+        }
+
+        // Event listener
+        lugarSelect.addEventListener("change", e => {
+            cargarBalance(e.target.value);
+        });
+
+        // Inicial
+        cargarLugares();
+    </script>
+
+</body>
+</html>
