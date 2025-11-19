@@ -7,6 +7,8 @@ from django.views import View
 from django.db import transaction
 from .models import Lugar, MiembroLugar, Gasto, ParteGasto
 from .utils import calcular_saldos_lugar, calcular_liquidaciones
+from django.shortcuts import render
+from django.shortcuts import render
 
 # --- crear lugar (POST) ---
 class CrearLugarView(View):
@@ -229,3 +231,8 @@ class ListaLugaresView(View):
         
 def prueba(request):
     return JsonResponse({'mensaje': 'Esto es una prueba desde TriTrip!'})
+
+
+def dashboard(request):
+    lugares = Lugar.objects.all()
+    return render(request, 'trips/dashboard.html', {'lugares': lugares})

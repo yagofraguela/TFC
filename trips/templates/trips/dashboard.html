@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Lugares</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        h2 { color: #555; margin-top: 20px; }
+        ul { list-style-type: none; padding-left: 0; }
+        li { margin-bottom: 5px; }
+        .lugar { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .miembros, .gastos { margin-left: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard de Lugares</h1>
+
+    {% if lugares %}
+        {% for lugar in lugares %}
+            <div class="lugar">
+                <h2>{{ lugar.nombre }}</h2>
+                <p>{{ lugar.descripcion }}</p>
+
+                <h3>Miembros:</h3>
+                <ul class="miembros">
+                    {% for miembro in lugar.miembros.all %}
+                        <li>{{ miembro.usuario.username }}</li>
+                    {% empty %}
+                        <li>No hay miembros aún.</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Gastos:</h3>
+                <ul class="gastos">
+                    {% for gasto in lugar.gastos.all %}
+                        <li>
+                            <strong>{{ gasto.titulo }}</strong> - {{ gasto.cantidad }} {{ gasto.moneda }}
+                            {% if gasto.pagado_por %}
+                                (Pagado por {{ gasto.pagado_por.username }})
+                            {% else %}
+                                (Pagado por ID {{ gasto.pagado_por_id }})
+                            {% endif %}
+                            <ul>
+                                {% for parte in gasto.partes.all %}
+                                    <li>
+                                        {% if parte.usuario %}
+                                            {{ parte.usuario.username }}: {{ parte.cantidad_parte }}
+                                        {% else %}
+                                            Usuario ID {{ parte.usuario_id }}: {{ parte.cantidad_parte }}
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% empty %}
+                        <li>No hay gastos aún.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay lugares creados todavía.</p>
+    {% endif %}
+</body>
+</html>

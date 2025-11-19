@@ -6,6 +6,7 @@ from .views import (
     EditarGastoView,
     ResumenLugarView,
     ListaGastosLugarView,
+    dashboard,
     DetalleLugarView
 )
 
@@ -25,4 +26,7 @@ urlpatterns = [
 
     # --- Resumen ---
     path('lugares/<int:lugar_id>/resumen/', ResumenLugarView.as_view(), name='resumen_lugar'),
+
+    # --- Dashboard ---
+     path('dashboard/', dashboard, name='dashboard'),
 ]

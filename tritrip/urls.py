@@ -22,6 +22,6 @@ from trips.views import prueba
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/prueba/', prueba, name='prueba'),
-    path('api/', include('trips.urls')),
+    path('', include('trips.urls')),
 ]
 
