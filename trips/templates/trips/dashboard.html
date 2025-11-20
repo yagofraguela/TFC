@@ -4,63 +4,115 @@
     <meta charset="UTF-8">
     <title>Dashboard de Lugares</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        h2 { color: #555; margin-top: 20px; }
-        ul { list-style-type: none; padding-left: 0; }
-        li { margin-bottom: 5px; }
-        .lugar { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
-        .miembros, .gastos { margin-left: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f5f0; /* verde muy claro */
+        }
+
+        header {
+            background-color: #2e7d32; /* verde oscuro */
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        main {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .lugar {
+            background-color: white;
+            border: 2px solid #2e7d32;
+            border-radius: 10px;
+            padding: 15px;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            text-decoration: none;
+            color: black;
+        }
+
+        .lugar:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .lugar h2 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+
+        .section-title {
+            color: #2e7d32;
+            margin-bottom: 5px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 5px 0 10px 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .miembros li, .gastos li {
+            background-color: #e8f5e9;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .gastos li ul li {
+            background-color: #f1f8e9;
+        }
+
+        .gastos-totales {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #1b5e20;
+        }
     </style>
 </head>
 <body>
-    <h1>Dashboard de Lugares</h1>
+    <header>
+        <h1>Dashboard de Lugares</h1>
+    </header>
 
-    {% if lugares %}
-        {% for lugar in lugares %}
-            <div class="lugar">
-                <h2>{{ lugar.nombre }}</h2>
-                <p>{{ lugar.descripcion }}</p>
+    <main>
+        {% if lugares_data %}
+            {% for data in lugares_data %}
+                <a class="lugar" href="{% url 'detalle_lugar' data.lugar.id %}">
+                    <h2>{{ data.lugar.nombre }}</h2>
+                    <p>{{ data.lugar.descripcion }}</p>
 
-                <h3>Miembros:</h3>
-                <ul class="miembros">
-                    {% for miembro in lugar.miembros.all %}
-                        <li>{{ miembro.usuario.username }}</li>
-                    {% empty %}
-                        <li>No hay miembros aún.</li>
-                    {% endfor %}
-                </ul>
+                    <h3 class="section-title">Miembros:</h3>
+                    <ul class="miembros">
+                        {% for miembro in data.lugar.miembros.all %}
+                            <li>{{ miembro.usuario.username }}</li>
+                        {% empty %}
+                            <li>No hay miembros aún.</li>
+                        {% endfor %}
+                    </ul>
 
-                <h3>Gastos:</h3>
-                <ul class="gastos">
-                    {% for gasto in lugar.gastos.all %}
-                        <li>
-                            <strong>{{ gasto.titulo }}</strong> - {{ gasto.cantidad }} {{ gasto.moneda }}
-                            {% if gasto.pagado_por %}
-                                (Pagado por {{ gasto.pagado_por.username }})
-                            {% else %}
-                                (Pagado por ID {{ gasto.pagado_por_id }})
-                            {% endif %}
-                            <ul>
-                                {% for parte in gasto.partes.all %}
-                                    <li>
-                                        {% if parte.usuario %}
-                                            {{ parte.usuario.username }}: {{ parte.cantidad_parte }}
-                                        {% else %}
-                                            Usuario ID {{ parte.usuario_id }}: {{ parte.cantidad_parte }}
-                                        {% endif %}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </li>
-                    {% empty %}
-                        <li>No hay gastos aún.</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No hay lugares creados todavía.</p>
-    {% endif %}
+                    <p class="gastos-totales">
+                        Gastos totales: {{ data.total_gastos }} {{ data.moneda }}
+                    </p>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p>No hay lugares creados todavía.</p>
+        {% endif %}
+    </main>
 </body>
 </html>

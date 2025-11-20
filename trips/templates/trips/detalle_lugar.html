@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de {{ lugar.nombre }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f5f0;
+        }
+
+        header {
+            background-color: #2e7d32;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2e7d32;
+        }
+
+        .section-title {
+            color: #2e7d32;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+            background-color: #e8f5e9;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .gasto {
+            margin-bottom: 15px;
+            border: 1px solid #2e7d32;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: white;
+        }
+
+        .parte {
+            background-color: #f1f8e9;
+            margin-left: 15px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .total {
+            font-weight: bold;
+            margin-top: 10px;
+            color: #1b5e20;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ lugar.nombre }}</h1>
+    </header>
+
+    <main>
+        <p>{{ lugar.descripcion }}</p>
+
+        <h2 class="section-title">Miembros</h2>
+        <ul>
+            {% for miembro in lugar.miembros.all %}
+                <li>{{ miembro.usuario.username }}</li>
+            {% empty %}
+                <li>No hay miembros aún.</li>
+            {% endfor %}
+        </ul>
+
+        <h2 class="section-title">Gastos</h2>
+        {% for gasto in lugar.gastos.all %}
+            <div class="gasto">
+                <strong>{{ gasto.titulo }}</strong> - {{ gasto.cantidad }} {{ gasto.moneda }}<br>
+                Pagado por: {{ gasto.pagado_por.username }}
+                <ul>
+                    {% for parte in gasto.partes.all %}
+                        <li class="parte">
+                            {{ parte.usuario.username }}: {{ parte.cantidad_parte }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% empty %}
+            <p>No hay gastos aún.</p>
+        {% endfor %}
+
+        <p class="total">Gastos totales: {{ total_gastos }} {{ moneda }}</p>
+    </main>
+</body>
+</html>

@@ -205,28 +205,23 @@ class ListaGastosLugarView(View):
 class DetalleLugarView(View):
     def get(self, request, lugar_id):
         lugar = get_object_or_404(Lugar, id=lugar_id)
+        # Calcular total de gastos
+        total_gastos = sum([g.cantidad for g in lugar.gastos.all()])
+        moneda = lugar.gastos.first().moneda if lugar.gastos.exists() else "EUR"
 
-        miembros = MiembroLugar.objects.filter(lugar=lugar).select_related("usuario")
-
-        lista_miembros = [
-            {
-                "id": m.usuario.id,
-                "username": m.usuario.username
-            }
-            for m in miembros
-        ]
-
-        return JsonResponse({
-            "id": lugar.id,
-            "nombre": lugar.nombre,
-            "fecha_creacion": lugar.fecha_creacion,
-            "miembros": lista_miembros
+        # Pasar a plantilla
+        return render(request, "trips/detalle_lugar.html", {
+            "lugar": lugar,
+            "total_gastos": total_gastos,
+            "moneda": moneda
         })
 
-class ListaLugaresView(View):
+
+class ListaLugaresHTMLView(View):
     def get(self, request):
-        lugares = Lugar.objects.all().values('id', 'nombre', 'descripcion', 'fecha_creacion')
-        return JsonResponse(list(lugares), safe=False)
+        lugares = Lugar.objects.all()
+        return render(request, "trips/lugares.html", {"lugares": lugares})
+
 
         
 def prueba(request):
@@ -236,3 +231,22 @@ def prueba(request):
 def dashboard(request):
     lugares = Lugar.objects.all()
     return render(request, 'trips/dashboard.html', {'lugares': lugares})
+
+
+class DashboardView(View):
+    def get(self, request):
+        lugares = Lugar.objects.all()
+        lugares_data = []
+
+        for lugar in lugares:
+            total_gastos = sum([g.cantidad for g in lugar.gastos.all()])
+            moneda = lugar.gastos.first().moneda if lugar.gastos.exists() else "EUR"
+            lugares_data.append({
+                "lugar": lugar,
+                "total_gastos": total_gastos,
+                "moneda": moneda
+            })
+
+        return render(request, "trips/dashboard.html", {
+            "lugares_data": lugares_data
+        })

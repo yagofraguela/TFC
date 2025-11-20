@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gastos en {{ lugar.nombre }}</title>
+</head>
+<body>
+
+<h1>Gastos en {{ lugar.nombre }}</h1>
+
+<ul>
+    {% for g in gastos %}
+        <li>
+            <b>{{ g.titulo }}</b> - {{ g.cantidad }}€ (pagado por {{ g.pagado_por.username }})
+        </li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'crear_gasto' lugar.id %}">Crear gasto</a>
+<br>
+<a href="{% url 'detalle_lugar' lugar.id %}">Volver al lugar</a>
+
+</body>
+</html>

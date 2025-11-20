@@ -1,32 +1,19 @@
 from django.urls import path
 from .views import (
-    CrearLugarView,
-    AñadirMiembroView,
-    CrearGastoView,
-    EditarGastoView,
-    ResumenLugarView,
-    ListaGastosLugarView,
-    dashboard,
-    DetalleLugarView
+    ListaLugaresHTMLView, DetalleLugarView, CrearLugarView,
+    CrearGastoView, DashboardView
 )
 
 urlpatterns = [
-    # --- Lugares ---
-    path('lugares/crear/', CrearLugarView.as_view(), name='crear_lugar'),
-    path('lugares/<int:lugar_id>/', DetalleLugarView.as_view(), name='detalle_lugar'),
+    path("", DashboardView.as_view(), name="dashboard"),
 
-    # --- Miembros ---
-    path('lugares/<int:lugar_id>/miembros/añadir/', AñadirMiembroView.as_view(), name='añadir_miembro'),
+    # Lugares
+    path("lugares/", ListaLugaresHTMLView.as_view(), name="lista_lugares"),
+    path("lugares/crear/", CrearLugarView.as_view(), name="crear_lugar"),
+    path("lugares/<int:lugar_id>/", DetalleLugarView.as_view(), name="detalle_lugar"),
 
-    # --- Gastos ---
-    path('lugares/<int:lugar_id>/gastos/', ListaGastosLugarView.as_view(), name='lista_gastos_lugar'),
-    path('lugares/<int:lugar_id>/gastos/crear/', CrearGastoView.as_view(), name='crear_gasto'),
-    path('gastos/<int:gasto_id>/editar/', EditarGastoView.as_view(), name='editar_gasto'),
-    path('gastos/<int:gasto_id>/eliminar/', EditarGastoView.as_view(), name='eliminar_gasto'),
-
-    # --- Resumen ---
-    path('lugares/<int:lugar_id>/resumen/', ResumenLugarView.as_view(), name='resumen_lugar'),
-
-    # --- Dashboard ---
-     path('dashboard/', dashboard, name='dashboard'),
+    # Gastos
+    path("lugares/<int:lugar_id>/gastos/crear/", CrearGastoView.as_view(), name="crear_gasto"),
 ]
+
+
