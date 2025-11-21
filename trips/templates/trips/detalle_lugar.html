@@ -2,104 +2,48 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Detalle de {{ lugar.nombre }}</title>
+    <title>{{ lugar.nombre }}</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f5f0;
-        }
-
-        header {
-            background-color: #2e7d32;
+        body { font-family: Arial, sans-serif; background-color: #f0f5f0; padding: 20px; }
+        .btn {
+            padding: 10px 15px;
+            background: #2e7d32;
             color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        main {
-            padding: 20px;
-        }
-
-        h1 {
-            color: #2e7d32;
-        }
-
-        .section-title {
-            color: #2e7d32;
-            margin-top: 20px;
-        }
-
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        li {
-            margin-bottom: 5px;
-            background-color: #e8f5e9;
-            padding: 5px;
             border-radius: 5px;
+            text-decoration: none;
         }
-
-        .gasto {
-            margin-bottom: 15px;
-            border: 1px solid #2e7d32;
-            border-radius: 8px;
-            padding: 10px;
-            background-color: white;
-        }
-
-        .parte {
-            background-color: #f1f8e9;
-            margin-left: 15px;
-            padding: 5px;
-            border-radius: 5px;
-        }
-
-        .total {
-            font-weight: bold;
-            margin-top: 10px;
-            color: #1b5e20;
-        }
+        h1, h2, h3 { color: #2e7d32; }
+        ul { background: white; padding: 10px; border-radius: 10px; }
+        li { margin-bottom: 5px; }
     </style>
 </head>
 <body>
-    <header>
-        <h1>{{ lugar.nombre }}</h1>
-    </header>
 
-    <main>
-        <p>{{ lugar.descripcion }}</p>
+    <a href="{% url 'crear_gasto' lugar.id %}" class="btn">➕ Añadir nuevo gasto</a>
 
-        <h2 class="section-title">Miembros</h2>
-        <ul>
-            {% for miembro in lugar.miembros.all %}
-                <li>{{ miembro.usuario.username }}</li>
-            {% empty %}
-                <li>No hay miembros aún.</li>
-            {% endfor %}
-        </ul>
+    <h1>{{ lugar.nombre }}</h1>
+    <p>{{ lugar.descripcion }}</p>
 
-        <h2 class="section-title">Gastos</h2>
-        {% for gasto in lugar.gastos.all %}
-            <div class="gasto">
-                <strong>{{ gasto.titulo }}</strong> - {{ gasto.cantidad }} {{ gasto.moneda }}<br>
-                Pagado por: {{ gasto.pagado_por.username }}
-                <ul>
-                    {% for parte in gasto.partes.all %}
-                        <li class="parte">
-                            {{ parte.usuario.username }}: {{ parte.cantidad_parte }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% empty %}
-            <p>No hay gastos aún.</p>
+    <h2>Miembros</h2>
+    <ul>
+        {% for m in miembros %}
+            <li>{{ m.usuario.username }}</li>
         {% endfor %}
+    </ul>
 
-        <p class="total">Gastos totales: {{ total_gastos }} {{ moneda }}</p>
-    </main>
+    <h2>Gastos</h2>
+    <ul>
+        {% for gasto in gastos %}
+            <li>
+                <strong>{{ gasto.titulo }}</strong> - {{ gasto.cantidad }} {{ gasto.moneda }}
+                (Pagado por {{ gasto.pagado_por.username }})
+            </li>
+        {% empty %}
+            <li>No hay gastos aún.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Total gastado: <strong>{{ total_gastos }} {{ moneda }}</strong></h3>
+
 </body>
 </html>

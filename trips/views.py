@@ -39,70 +39,59 @@ class AñadirMiembroView(View):
             return HttpResponseBadRequest(json.dumps({'error': 'JSON inválido'}), content_type='application/json')
 
 # --- crear gasto (POST) ---
-class CrearGastoView(View):
-    """
-    POST /api/lugares/<id>/gastos/
-    payload ejemplo:
-    {
-      "titulo": "Cena",
-      "cantidad": "90.00",
-      "moneda": "EUR",
-      "pagado_por_id": 1,
-      "tipo_reparto": "igual",  # o "personalizado"
-      "partes": [ {"usuario_id": 1, "cantidad_parte": "30.00"}, ... ]  # opcional si tipo_reparto == "igual"
-    }
-    """
-    @transaction.atomic
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from decimal import Decimal
+from .models import Lugar, Gasto, ParteGasto, MiembroLugar
+
+
+class CrearGastoFormView(View):
+    def get(self, request, lugar_id):
+        lugar = get_object_or_404(Lugar, pk=lugar_id)
+        miembros = MiembroLugar.objects.filter(lugar=lugar)
+
+        return render(request, "trips/crear_gasto.html", {
+            "lugar": lugar,
+            "miembros": miembros
+        })
+
     def post(self, request, lugar_id):
-        try:
-            payload = json.loads(request.body)
-            titulo = payload.get('titulo')
-            cantidad = payload.get('cantidad')
-            moneda = payload.get('moneda', 'EUR')
-            pagado_por_id = payload.get('pagado_por_id')
-            tipo_reparto = payload.get('tipo_reparto', 'igual')
-            partes = payload.get('partes', None)
+        lugar = get_object_or_404(Lugar, pk=lugar_id)
 
-            if not all([titulo, cantidad, pagado_por_id]):
-                return HttpResponseBadRequest(json.dumps({'error': 'titulo, cantidad y pagado_por_id son requeridos'}), content_type='application/json')
+        titulo = request.POST.get("titulo")
+        cantidad = request.POST.get("cantidad")
+        pagado_por = request.POST.get("pagado_por")
+        seleccionados = request.POST.getlist("usuarios")
 
-            lugar = get_object_or_404(Lugar, pk=lugar_id)
-            gasto = Gasto.objects.create(
-                lugar=lugar,
-                titulo=titulo,
-                cantidad=Decimal(str(cantidad)),
-                moneda=moneda,
-                pagado_por_id=pagado_por_id,
-                tipo_reparto=tipo_reparto
+        if not titulo or not cantidad or not pagado_por or not seleccionados:
+            return render(request, "crear_gasto.html", {
+                "lugar": lugar,
+                "miembros": MiembroLugar.objects.filter(lugar=lugar),
+                "error": "Todos los campos son obligatorios"
+            })
+
+        cantidad = Decimal(cantidad)
+        n = len(seleccionados)
+        parte = (cantidad / n).quantize(Decimal("0.01"))
+
+        gasto = Gasto.objects.create(
+            lugar=lugar,
+            titulo=titulo,
+            cantidad=cantidad,
+            moneda="EUR",
+            pagado_por_id=pagado_por,
+            tipo_reparto="igual"
+        )
+
+        for uid in seleccionados:
+            ParteGasto.objects.create(
+                gasto=gasto,
+                usuario_id=uid,
+                cantidad_parte=parte
             )
 
-            # si reparto igual y no se pasan partes, crear partes a partir de MiembroLugar
-            if tipo_reparto == 'igual' and not partes:
-                miembros = list(MiembroLugar.objects.filter(lugar=lugar).values_list('usuario_id', flat=True))
-                if not miembros:
-                    raise ValueError('No hay miembros en el lugar para repartir')
-                n = len(miembros)
-                parte = (Decimal(str(cantidad)) / Decimal(n)).quantize(Decimal('0.01'))
-                for uid in miembros:
-                    ParteGasto.objects.create(gasto=gasto, usuario_id=uid, cantidad_parte=parte)
-            else:
-                # se esperan partes dadas por el cliente
-                if not partes:
-                    return HttpResponseBadRequest(json.dumps({'error': 'partes requeridas para tipo_reparto personalizado'}), content_type='application/json')
-                total = Decimal('0.00')
-                for p in partes:
-                    uid = p.get('usuario_id')
-                    cant = Decimal(str(p.get('cantidad_parte', '0.00')))
-                    ParteGasto.objects.create(gasto=gasto, usuario_id=uid, cantidad_parte=cant)
-                    total += cant
-                if total != Decimal(str(cantidad)):
-                    return HttpResponseBadRequest(json.dumps({'error': 'suma de partes no coincide con cantidad total', 'total_partes': str(total)}), content_type='application/json')
+        return redirect(f"/lugares/{lugar.id}/")
 
-            return JsonResponse({'gasto_id': gasto.id, 'titulo': gasto.titulo}, status=201)
-        except json.JSONDecodeError:
-            return HttpResponseBadRequest(json.dumps({'error': 'JSON inválido'}), content_type='application/json')
-        except ValueError as e:
-            return HttpResponseBadRequest(json.dumps({'error': str(e)}), content_type='application/json')
 
 # --- editar gasto (PUT) ---
 class EditarGastoView(View):
@@ -202,20 +191,27 @@ class ListaGastosLugarView(View):
             })
         return JsonResponse(gastos, safe=False)
 
+# views.py (código sugerido para DetalleLugarView)
 class DetalleLugarView(View):
     def get(self, request, lugar_id):
         lugar = get_object_or_404(Lugar, id=lugar_id)
-        # Calcular total de gastos
-        total_gastos = sum([g.cantidad for g in lugar.gastos.all()])
-        moneda = lugar.gastos.first().moneda if lugar.gastos.exists() else "EUR"
+        
+        # OBTENER LOS OBJETOS NECESARIOS:
+        miembros = lugar.miembros.select_related('usuario')
+        gastos = lugar.gastos.select_related('pagado_por').order_by('-fecha')
 
-        # Pasar a plantilla
+        # Calcular total de gastos (esto ya lo tenías)
+        total_gastos = sum([g.cantidad for g in gastos])
+        moneda = gastos.first().moneda if gastos.exists() else "EUR"
+
+        # Pasar a plantilla (contexto completo)
         return render(request, "trips/detalle_lugar.html", {
             "lugar": lugar,
+            "miembros": miembros,   # <--- AÑADIDO
+            "gastos": gastos,       # <--- AÑADIDO
             "total_gastos": total_gastos,
             "moneda": moneda
         })
-
 
 class ListaLugaresHTMLView(View):
     def get(self, request):

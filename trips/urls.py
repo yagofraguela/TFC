@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     ListaLugaresHTMLView, DetalleLugarView, CrearLugarView,
-    CrearGastoView, DashboardView
+     DashboardView,CrearGastoFormView
 )
 
 urlpatterns = [
@@ -13,7 +13,7 @@ urlpatterns = [
     path("lugares/<int:lugar_id>/", DetalleLugarView.as_view(), name="detalle_lugar"),
 
     # Gastos
-    path("lugares/<int:lugar_id>/gastos/crear/", CrearGastoView.as_view(), name="crear_gasto"),
+    path("lugares/<int:lugar_id>/gastos/crear/", CrearGastoFormView.as_view(), name="crear_gasto"),
 ]
 
 
