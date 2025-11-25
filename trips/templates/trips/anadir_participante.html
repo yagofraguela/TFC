@@ -2,49 +2,40 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Crear nuevo destino</title>
+    <title>Añadir Participante</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f5f0; /* verde muy claro */
+            background: #f6fff6;
             margin: 0;
             padding: 20px;
         }
-
         .container {
             max-width: 500px;
             margin: auto;
-            background-color: white;
+            background: white;
             padding: 25px;
             border-radius: 12px;
             border: 2px solid #2e7d32;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-
         h2 {
             color: #2e7d32;
-            text-align: center;
         }
-
         label {
             font-weight: bold;
             color: #2e7d32;
-            display: block;
-            margin-top: 10px;
         }
-
-        input, textarea {
+        input, select {
             width: 100%;
             padding: 10px;
             margin-top: 8px;
             margin-bottom: 15px;
             border-radius: 6px;
             border: 1px solid #2e7d32;
-            font-size: 14px;
         }
-
         button {
-            background-color: #2e7d32;
+            background: #2e7d32;
             color: white;
             padding: 12px;
             width: 100%;
@@ -52,40 +43,36 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: bold;
         }
-
         button:hover {
-            background-color: #1b5e20;
+            background: #1b5e20;
         }
-
         a {
             display: block;
             margin-top: 15px;
             text-align: center;
             color: #2e7d32;
             text-decoration: none;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Crear nuevo destino</h2>
 
-        <form method="POST">
-            {% csrf_token %}
-            
-            <label for="id_nombre">Nombre del destino</label>
-            {{ form.nombre }}
+<div class="container">
+    <h2>Añadir participante a {{ lugar.nombre }}</h2>
 
-            <label for="id_descripcion">Descripción</label>
-            {{ form.descripcion }}
+    <form method="POST">
+        {% csrf_token %}
 
-            <button type="submit">Crear destino</button>
-        </form>
+        <!-- Crear nuevo usuario -->
+        <label for="id_nombre_nuevo">Crear usuario nuevo</label>
+        {{ form.nombre_nuevo }}
 
-        <a href="{% url 'dashboard' %}">← Volver al dashboard</a>
-    </div>
+        <button type="submit">Añadir</button>
+    </form>
+
+    <a href="{% url 'detalle_lugar' lugar.id %}">Volver</a>
+</div>
+
 </body>
 </html>

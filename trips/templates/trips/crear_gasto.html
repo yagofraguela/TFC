@@ -1,42 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Nuevo gasto en {{ lugar.nombre }}</title>
+    <meta charset="UTF-8">
+    <title>Nuevo gasto - {{ lugar.nombre }}</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f5f0; /* fondo verde suave */
+        }
+
+        header {
+            background-color: #2e7d32;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #2e7d32;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 2px solid #2e7d32;
+            border-radius: 8px;
+            background-color: #f6fff6;
+        }
+
+        .checkbox-group {
+            background-color: #e8f5e9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group label {
+            color: black;
+            font-weight: normal;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 12px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
+        }
+
+        a.volver {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #2e7d32;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        a.volver:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Añadir gasto en {{ lugar.nombre }}</h1>
+<header>
+    <h1>Nuevo gasto en {{ lugar.nombre }}</h1>
+</header>
 
-{% if error %}
-<p style="color:red;">{{ error }}</p>
-{% endif %}
+<div class="container">
 
-<form method="POST">
-    {% csrf_token %}
+    <form method="POST">
+        {% csrf_token %}
 
-    <label>Título del gasto:</label><br>
-    <input type="text" name="titulo"><br><br>
+        <label>Título del gasto</label>
+        <input type="text" name="titulo" placeholder="Ej: Cena, gasolina..." required>
 
-    <label>Cantidad (€):</label><br>
-    <input type="number" name="cantidad" step="0.01"><br><br>
+        <label>Cantidad (€)</label>
+        <input type="number" name="cantidad" step="0.01" required>
 
-    <label>Pagado por:</label><br>
-    <select name="pagado_por">
-        {% for m in miembros %}
-            <option value="{{ m.usuario.id }}">{{ m.usuario.username }}</option>
-        {% endfor %}
-    </select>
-    <br><br>
+        <label>Pagado por</label>
+        <select name="pagado_por" required>
+            {% for m in miembros %}
+                <option value="{{ m.usuario.id }}">
+                    {{ m.usuario.username }}
+                </option>
+            {% endfor %}
+        </select>
 
-    <label>Repartir entre:</label><br>
-    {% for m in miembros %}
-        <input type="checkbox" name="usuarios" value="{{ m.usuario.id }}">
-        {{ m.usuario.username }}<br>
-    {% endfor %}
-    <br>
+        <label>Participantes</label>
+        <div class="checkbox-group">
+            {% for m in miembros %}
+                <label>
+                    <input type="checkbox" name="usuarios" value="{{ m.usuario.id }}" checked>
+                    {{ m.usuario.username }}
+                </label><br>
+            {% endfor %}
+        </div>
 
-    <button type="submit">Guardar gasto</button>
-</form>
+
+        <button type="submit">Crear gasto</button>
+    </form>
+
+    <a href="{% url 'detalle_lugar' lugar.id %}" class="volver">← Volver al lugar</a>
+
+</div>
 
 </body>
 </html>

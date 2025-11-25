@@ -3,47 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ lugar.nombre }}</title>
+
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f0f5f0; padding: 20px; }
-        .btn {
-            padding: 10px 15px;
-            background: #2e7d32;
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f5f0;
+        }
+
+        header {
+            background-color: #2e7d32;
             color: white;
-            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #2e7d32;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            color: #2e7d32;
+            font-size: 22px;
+            margin-top: 25px;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 5px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            padding: 10px;
+            background-color: #e8f5e9;
+            margin-bottom: 8px;
+            border-radius: 8px;
+        }
+
+        .gasto-sublist li {
+            background-color: #f1f8e9;
+        }
+
+        .total-box {
+            background-color: #c8e6c9;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+            border: 2px solid #2e7d32;
+        }
+
+        .btn {
+            display: block;
+            text-align: center;
+            background-color: #2e7d32;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 25px;
+            font-size: 18px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #1b5e20;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #2e7d32;
             text-decoration: none;
         }
-        h1, h2, h3 { color: #2e7d32; }
-        ul { background: white; padding: 10px; border-radius: 10px; }
-        li { margin-bottom: 5px; }
     </style>
 </head>
+
 <body>
 
-    <a href="{% url 'crear_gasto' lugar.id %}" class="btn">➕ Añadir nuevo gasto</a>
-
+<header>
     <h1>{{ lugar.nombre }}</h1>
+</header>
+
+<div class="container">
+
+    <h2 class="section-title">Descripción</h2>
     <p>{{ lugar.descripcion }}</p>
 
-    <h2>Miembros</h2>
+    <h2 class="section-title">Miembros</h2>
     <ul>
         {% for m in miembros %}
             <li>{{ m.usuario.username }}</li>
+        {% empty %}
+            <li>No hay miembros en este lugar.</li>
         {% endfor %}
     </ul>
 
-    <h2>Gastos</h2>
+    <!-- SECCIÓN DE DEUDAS TIPO TRICOUNT -->
+    <h2 class="section-title">Deudas</h2>
+<ul>
+    {% if deudas %}
+        {% for d in deudas %}
+            <li>{{ d.de }} debe {{ d.cantidad }} € a {{ d.a }}</li>
+        {% endfor %}
+    {% else %}
+        <li>No hay deudas pendientes.</li>
+    {% endif %}
+</ul>
+
+
+    <h2 class="section-title">Gastos</h2>
     <ul>
         {% for gasto in gastos %}
             <li>
-                <strong>{{ gasto.titulo }}</strong> - {{ gasto.cantidad }} {{ gasto.moneda }}
-                (Pagado por {{ gasto.pagado_por.username }})
+                <strong>{{ gasto.titulo }}</strong>
+                - {{ gasto.cantidad }} {{ gasto.moneda }}
+                (Pagado por: {{ gasto.pagado_por.username }})
+
+                <ul class="gasto-sublist">
+                    {% for parte in gasto.partes.all %}
+                        <li>{{ parte.usuario.username }}: {{ parte.cantidad_parte }} €</li>
+                    {% endfor %}
+                </ul>
             </li>
         {% empty %}
-            <li>No hay gastos aún.</li>
+            <li>No hay gastos registrados.</li>
         {% endfor %}
     </ul>
 
-    <h3>Total gastado: <strong>{{ total_gastos }} {{ moneda }}</strong></h3>
+    <div class="total-box">
+        Total gastado: {{ total_gastos }} €
+    </div>
+
+    <!-- BOTÓN CREAR GASTO -->
+    <a href="{% url 'crear_gasto' lugar.id %}" class="btn">➕ Crear nuevo gasto</a>
+
+    <!-- BOTÓN AÑADIR PARTICIPANTE -->
+    <a href="{% url 'anadir_participante' lugar.id %}" class="btn" style="background-color:#4caf50;">
+        ➕ Añadir participante
+    </a>
+
+    <a href="/" class="back">← Volver al dashboard</a>
+
+</div>
 
 </body>
 </html>

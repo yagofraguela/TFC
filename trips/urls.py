@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     ListaLugaresHTMLView, DetalleLugarView, CrearLugarView,
-     DashboardView,CrearGastoFormView
+     DashboardView,CrearGastoFormView,AnadirParticipanteView
 )
 
 urlpatterns = [
@@ -14,6 +14,9 @@ urlpatterns = [
 
     # Gastos
     path("lugares/<int:lugar_id>/gastos/crear/", CrearGastoFormView.as_view(), name="crear_gasto"),
+
+    path('lugares/<int:pk>/anadir-participante/', AnadirParticipanteView.as_view(), name='anadir_participante'),
+
 ]
 
 

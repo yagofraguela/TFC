@@ -9,6 +9,11 @@ from .models import Lugar, MiembroLugar, Gasto, ParteGasto
 from .utils import calcular_saldos_lugar, calcular_liquidaciones
 from django.shortcuts import render
 from django.shortcuts import render
+from .forms import AnadirParticipanteForm
+from django.contrib.auth.models import User
+from .forms import CrearLugarForm
+from decimal import Decimal
+
 
 # --- crear lugar (POST) ---
 class CrearLugarView(View):
@@ -64,7 +69,7 @@ class CrearGastoFormView(View):
         seleccionados = request.POST.getlist("usuarios")
 
         if not titulo or not cantidad or not pagado_por or not seleccionados:
-            return render(request, "crear_gasto.html", {
+            return render(request, "trips/crear_gasto.html", {
                 "lugar": lugar,
                 "miembros": MiembroLugar.objects.filter(lugar=lugar),
                 "error": "Todos los campos son obligatorios"
@@ -192,26 +197,64 @@ class ListaGastosLugarView(View):
         return JsonResponse(gastos, safe=False)
 
 # views.py (código sugerido para DetalleLugarView)
+# trips/views.py
+
+
 class DetalleLugarView(View):
     def get(self, request, lugar_id):
         lugar = get_object_or_404(Lugar, id=lugar_id)
-        
-        # OBTENER LOS OBJETOS NECESARIOS:
         miembros = lugar.miembros.select_related('usuario')
         gastos = lugar.gastos.select_related('pagado_por').order_by('-fecha')
-
-        # Calcular total de gastos (esto ya lo tenías)
         total_gastos = sum([g.cantidad for g in gastos])
         moneda = gastos.first().moneda if gastos.exists() else "EUR"
 
-        # Pasar a plantilla (contexto completo)
+        # --- calcular saldos correctamente ---
+        saldos = {m.usuario.id: Decimal('0.00') for m in miembros}
+
+        for gasto in gastos:
+            pagador_id = gasto.pagado_por.id
+            for parte in gasto.partes.all():
+                uid = parte.usuario.id
+                if uid != pagador_id:
+                    # el usuario debe su parte
+                    saldos[uid] -= parte.cantidad_parte
+                    # el pagador recibe esa parte
+                    saldos[pagador_id] += parte.cantidad_parte
+
+        # --- generar deudas ---
+        deudores = {uid: s for uid, s in saldos.items() if s < 0}  # saldo negativo = debe
+        acreedores = {uid: s for uid, s in saldos.items() if s > 0}  # saldo positivo = recibe
+
+        deudas = []
+
+        for de_id, de_saldo in deudores.items():
+            deuda_restante = -de_saldo  # convertir a positivo
+            for a_id, a_saldo in list(acreedores.items()):
+                if a_saldo <= 0:
+                    continue
+                pago = min(deuda_restante, a_saldo)
+                if pago > 0:
+                    de_user = miembros.get(usuario_id=de_id).usuario
+                    a_user = miembros.get(usuario_id=a_id).usuario
+                    deudas.append({
+                        "de": de_user.username,
+                        "a": a_user.username,
+                        "cantidad": float(pago)
+                    })
+                    deuda_restante -= pago
+                    acreedores[a_id] -= pago
+                if deuda_restante <= 0:
+                    break
+
         return render(request, "trips/detalle_lugar.html", {
             "lugar": lugar,
-            "miembros": miembros,   # <--- AÑADIDO
-            "gastos": gastos,       # <--- AÑADIDO
+            "miembros": miembros,
+            "gastos": gastos,
             "total_gastos": total_gastos,
-            "moneda": moneda
+            "moneda": moneda,
+            "deudas": deudas
         })
+
 
 class ListaLugaresHTMLView(View):
     def get(self, request):
@@ -246,3 +289,62 @@ class DashboardView(View):
         return render(request, "trips/dashboard.html", {
             "lugares_data": lugares_data
         })
+
+
+class AnadirParticipanteView(View):
+    template_name = "trips/anadir_participante.html"
+
+    def get(self, request, pk):
+        lugar = get_object_or_404(Lugar, pk=pk)
+        form = AnadirParticipanteForm()
+        return render(request, self.template_name, {
+            "lugar": lugar,
+            "form": form
+        })
+
+    def post(self, request, pk):
+        lugar = get_object_or_404(Lugar, pk=pk)
+        form = AnadirParticipanteForm(request.POST)
+
+        if form.is_valid():
+            usuario = form.cleaned_data.get("usuario")
+            nombre_nuevo = form.cleaned_data.get("nombre_nuevo")
+
+            # 🔹 Verificar existencia antes de crear
+            if not usuario and nombre_nuevo:
+                usuario, created = User.objects.get_or_create(username=nombre_nuevo)
+
+            if not usuario:
+                form.add_error(None, "Debes seleccionar un usuario o escribir uno nuevo.")
+                return render(request, self.template_name, {
+                    "lugar": lugar,
+                    "form": form
+                })
+
+            # Crear relación MiembroLugar
+            MiembroLugar.objects.get_or_create(lugar=lugar, usuario=usuario)
+
+            return redirect("detalle_lugar", lugar_id=lugar.id)
+
+        return render(request, self.template_name, {
+            "lugar": lugar,
+            "form": form
+        })
+
+
+
+class CrearLugarView(View):
+    template_name = "trips/crear_lugar.html"
+
+    def get(self, request):
+        # Mostrar el formulario
+        form = CrearLugarForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request):
+        # Procesar el formulario
+        form = CrearLugarForm(request.POST)
+        if form.is_valid():
+            lugar = form.save()
+            return redirect("detalle_lugar", lugar_id=lugar.id)
+        return render(request, self.template_name, {"form": form})
