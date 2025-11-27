@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -15,11 +16,16 @@
         header {
             background-color: #2e7d32;
             color: white;
-            padding: 20px;
-            text-align: center;
+            padding: 15px;
         }
 
-        .container {
+        .header-container {
+            display: flex;
+            align-items: center;
+            margin-left: 15px;
+        }
+
+        main {
             max-width: 900px;
             margin: 30px auto;
             background-color: white;
@@ -35,6 +41,13 @@
             margin-top: 25px;
             border-bottom: 2px solid #2e7d32;
             padding-bottom: 5px;
+        }
+
+        .lugar-title {
+            font-size: 28px;
+            color: #2e7d32;
+            text-align: center;
+            margin-bottom: 15px;
         }
 
         ul {
@@ -96,10 +109,18 @@
 <body>
 
 <header>
-    <h1>{{ lugar.nombre }}</h1>
+    <div class="header-container">
+        <img src="{% static 'trips/img/foto.png' %}" 
+             alt="TriTrip Logo"
+             style="width: 200px; border-radius: 12px;">
+        <h1 style="margin-left:15px;"></h1>
+    </div>
 </header>
 
-<div class="container">
+<main>
+
+    <!-- Nombre del lugar como título dentro del contenido -->
+    <div class="lugar-title">{{ lugar.nombre }}</div>
 
     <h2 class="section-title">Descripción</h2>
     <p>{{ lugar.descripcion }}</p>
@@ -113,18 +134,16 @@
         {% endfor %}
     </ul>
 
-    <!-- SECCIÓN DE DEUDAS TIPO TRICOUNT -->
     <h2 class="section-title">Deudas</h2>
-<ul>
-    {% if deudas %}
-        {% for d in deudas %}
-            <li>{{ d.de }} debe {{ d.cantidad }} € a {{ d.a }}</li>
-        {% endfor %}
-    {% else %}
-        <li>No hay deudas pendientes.</li>
-    {% endif %}
-</ul>
-
+    <ul>
+        {% if deudas %}
+            {% for d in deudas %}
+                <li>{{ d.de }} debe {{ d.cantidad }} € a {{ d.a }}</li>
+            {% endfor %}
+        {% else %}
+            <li>No hay deudas pendientes.</li>
+        {% endif %}
+    </ul>
 
     <h2 class="section-title">Gastos</h2>
     <ul>
@@ -133,7 +152,6 @@
                 <strong>{{ gasto.titulo }}</strong>
                 - {{ gasto.cantidad }} {{ gasto.moneda }}
                 (Pagado por: {{ gasto.pagado_por.username }})
-
                 <ul class="gasto-sublist">
                     {% for parte in gasto.partes.all %}
                         <li>{{ parte.usuario.username }}: {{ parte.cantidad_parte }} €</li>
@@ -149,17 +167,12 @@
         Total gastado: {{ total_gastos }} €
     </div>
 
-    <!-- BOTÓN CREAR GASTO -->
+    <!-- BOTONES -->
     <a href="{% url 'crear_gasto' lugar.id %}" class="btn">➕ Crear nuevo gasto</a>
-
-    <!-- BOTÓN AÑADIR PARTICIPANTE -->
-    <a href="{% url 'anadir_participante' lugar.id %}" class="btn" style="background-color:#4caf50;">
-        ➕ Añadir participante
-    </a>
-
+    <a href="{% url 'anadir_participante' lugar.id %}" class="btn" style="background-color:#4caf50;">➕ Añadir participante</a>
     <a href="/" class="back">← Volver al dashboard</a>
 
-</div>
+</main>
 
 </body>
 </html>

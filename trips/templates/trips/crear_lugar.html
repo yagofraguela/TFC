@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,14 +7,27 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f5f0; /* verde muy claro */
+            background-color: #f0f5f0;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+        }
+
+        header {
+            background-color: #2e7d32;
+            color: white;
+            padding: 15px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: flex-start; /* logo izquierda */
+            align-items: center;
+            margin-left: 15px;
         }
 
         .container {
             max-width: 500px;
-            margin: auto;
+            margin: 20px auto;
             background-color: white;
             padding: 25px;
             border-radius: 12px;
@@ -70,6 +84,15 @@
     </style>
 </head>
 <body>
+
+    <header>
+        <div class="header-container">
+            <img src="{% static 'trips/img/foto.png' %}" 
+                 alt="TriTrip Logo"
+                 style="width: 200px; border-radius: 12px;">
+        </div>
+    </header>
+
     <div class="container">
         <h2>Crear nuevo destino</h2>
 
@@ -87,5 +110,6 @@
 
         <a href="{% url 'dashboard' %}">← Volver al dashboard</a>
     </div>
+
 </body>
 </html>
