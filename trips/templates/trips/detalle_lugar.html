@@ -171,6 +171,14 @@
     <a href="{% url 'crear_gasto' lugar.id %}" class="btn">➕ Crear nuevo gasto</a>
     <a href="{% url 'anadir_participante' lugar.id %}" class="btn" style="background-color:#4caf50;">➕ Añadir participante</a>
     <a href="/" class="back">← Volver al dashboard</a>
+    <!-- BOTÓN ELIMINAR LUGAR -->
+    <form method="POST" action="{% url 'eliminar_lugar' lugar.id %}" style="text-align:center; margin-top:20px;">
+        {% csrf_token %}
+        <button type="submit" style="background-color:#e53935; color:white; padding:12px 25px; border:none; border-radius:8px; font-size:16px; cursor:pointer;">
+            🗑 Eliminar lugar
+        </button>
+    </form>
+
 
 </main>
 

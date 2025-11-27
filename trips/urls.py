@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (
     ListaLugaresHTMLView, DetalleLugarView, CrearLugarView,
-     DashboardView,CrearGastoFormView,AnadirParticipanteView
+    DashboardView, CrearGastoFormView, AnadirParticipanteView,
+    eliminar_lugar  
 )
 
 urlpatterns = [
@@ -17,6 +18,9 @@ urlpatterns = [
 
     path('lugares/<int:pk>/anadir-participante/', AnadirParticipanteView.as_view(), name='anadir_participante'),
 
+    # Eliminar lugar
+    path('lugares/<int:lugar_id>/eliminar/', eliminar_lugar, name='eliminar_lugar'),
 ]
+
 
 

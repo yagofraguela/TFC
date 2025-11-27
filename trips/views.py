@@ -13,6 +13,7 @@ from .forms import AnadirParticipanteForm
 from django.contrib.auth.models import User
 from .forms import CrearLugarForm
 from decimal import Decimal
+from django.contrib import messages
 
 
 # --- crear lugar (POST) ---
@@ -365,3 +366,12 @@ class CrearLugarView(View):
             lugar = form.save()
             return redirect("detalle_lugar", lugar_id=lugar.id)
         return render(request, self.template_name, {"form": form})
+
+
+def eliminar_lugar(request, lugar_id):
+    lugar = get_object_or_404(Lugar, id=lugar_id)
+    
+    if request.method == "POST":
+        lugar.delete()
+        messages.success(request, "El lugar ha sido eliminado correctamente.")
+        return redirect('dashboard')       
