@@ -274,20 +274,37 @@ def dashboard(request):
 
 class DashboardView(View):
     def get(self, request):
-        lugares = Lugar.objects.all()
-        lugares_data = []
 
+        # 1️⃣ Obtener el valor del filtro por usuario (opcional)
+        user_filter = request.GET.get("user", "")
+
+        # 2️⃣ Obtener todos los lugares
+        lugares = Lugar.objects.all()
+
+        # 3️⃣ Si hay filtro, solo mostrar lugares donde ese usuario es miembro
+        if user_filter:
+            lugares = lugares.filter(miembros__usuario__id=user_filter).distinct()
+
+        # 4️⃣ Preparar información de cada lugar
+        lugares_data = []
         for lugar in lugares:
             total_gastos = sum([g.cantidad for g in lugar.gastos.all()])
             moneda = lugar.gastos.first().moneda if lugar.gastos.exists() else "EUR"
+
             lugares_data.append({
                 "lugar": lugar,
                 "total_gastos": total_gastos,
                 "moneda": moneda
             })
 
+        # 5️⃣ Obtener todos los usuarios que aparecen en miembros (para el filtro)
+        todos_los_miembros = MiembroLugar.objects.select_related("usuario").all().distinct()
+
+        # 6️⃣ Render
         return render(request, "trips/dashboard.html", {
-            "lugares_data": lugares_data
+            "lugares_data": lugares_data,
+            "todos_los_miembros": todos_los_miembros,
+            "user_filter": user_filter
         })
 
 

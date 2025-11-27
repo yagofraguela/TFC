@@ -8,14 +8,19 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f5f0; /* verde muy claro */
+            background-color: #f0f5f0;
         }
 
         header {
-            background-color: #2e7d32; /* verde oscuro */
+            background-color: #2e7d32;
             color: white;
             padding: 20px;
-            text-align: center;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 {
@@ -50,9 +55,7 @@
         .lugar h1 {
             color: #2e7d32;
             margin-top: 0;
-            
-            display: flex;
-            justify-content: center;
+            text-align: center;
         }
 
         .section-title {
@@ -63,21 +66,13 @@
         ul {
             list-style-type: none;
             padding-left: 0;
-            margin: 5px 0 10px 0;
         }
 
-        li {
-            margin-bottom: 5px;
-        }
-
-        .miembros li, .gastos li {
+        .miembros li {
             background-color: #e8f5e9;
             padding: 5px;
             border-radius: 5px;
-        }
-
-        .gastos li ul li {
-            background-color: #f1f8e9;
+            margin-bottom: 5px;
         }
 
         .gastos-totales {
@@ -86,37 +81,72 @@
             color: #1b5e20;
         }
 
-        /* Botón crear lugar */
-        .btn-crear {
-            display: inline-block;
+        /* BOTÓN FLOTANTE */
+        .btn-flotante {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
             background-color: #2e7d32;
             color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            margin: 15px;
-            transition: background-color 0.2s;
-        }
-
-        .btn-crear:hover {
-            background-color: #1b5e20;
-        }
-
-        .header-container {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px; /* estilo destino/cuadro */
+            font-size: 40px;
+            border: none;
+            cursor: pointer;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-flotante:hover {
+            background-color: #1b5e20;
+            transform: scale(1.08);
+        }
+
+        /* BOTÓN FILTRO */
+        .btn-filtro {
+            background-color: #1b5e20;
+            padding: 10px 18px;
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-filtro option {
+            color: black;
         }
 
     </style>
 </head>
 <body>
+
     <header>
         <div class="header-container">
             <h1>Dashboard de Lugares</h1>
-            <a href="{% url 'crear_lugar' %}" class="btn-crear">➕ Crear nuevo destino</a>
+
+            <!-- SELECT FILTRO USUARIOS -->
+            <form method="GET">
+                <select name="user" onchange="this.form.submit()" class="btn-filtro">
+                    <option value="">🔍 Filtrar por usuario</option>
+
+                    {% for miembro in todos_los_miembros %}
+                        <option value="{{ miembro.usuario.id }}"
+                            {% if user_filter == miembro.usuario.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ miembro.usuario.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+
         </div>
     </header>
 
@@ -125,7 +155,6 @@
             {% for data in lugares_data %}
                 <a class="lugar" href="{% url 'detalle_lugar' data.lugar.id %}">
                     <h1>{{ data.lugar.nombre }}</h1>
-                   
 
                     <h3 class="section-title">Miembros:</h3>
                     <ul class="miembros">
@@ -145,5 +174,9 @@
             <p>No hay lugares creados todavía.</p>
         {% endif %}
     </main>
+
+    <!-- BOTÓN FLOTANTE CREAR LUGAR -->
+    <a href="{% url 'crear_lugar' %}" class="btn-flotante">+</a>
+
 </body>
 </html>
