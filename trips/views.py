@@ -275,7 +275,6 @@ def dashboard(request):
 
 class DashboardView(View):
     def get(self, request):
-
         # 1️⃣ Obtener el valor del filtro por usuario (opcional)
         user_filter = request.GET.get("user", "")
 
@@ -299,14 +298,26 @@ class DashboardView(View):
             })
 
         # 5️⃣ Obtener todos los usuarios que aparecen en miembros (para el filtro)
-        todos_los_miembros = MiembroLugar.objects.select_related("usuario").all().distinct()
+        todos_los_miembros = (
+            MiembroLugar.objects.select_related("usuario")
+            .all()
+            .order_by("usuario__username")
+        )
 
-        # 6️⃣ Render
+        # Eliminar duplicados para que no aparezcan repetidos en el filtro
+        unique_miembros = {}
+        for miembro in todos_los_miembros:
+            if miembro.usuario.id not in unique_miembros:
+                unique_miembros[miembro.usuario.id] = miembro
+        todos_los_miembros = list(unique_miembros.values())
+
+        # 6️⃣ Renderizar el dashboard
         return render(request, "trips/dashboard.html", {
             "lugares_data": lugares_data,
             "todos_los_miembros": todos_los_miembros,
             "user_filter": user_filter
         })
+
 
 
 class AnadirParticipanteView(View):
