@@ -81,7 +81,7 @@ Gemini (agente IA) para verificación y control de calidad
 
 📦 Instalación
 1️⃣ Clonar el repositorio
-git clone https://github.com/tu_usuario/TriTrips.git
+git clone https://github.com/yagofraguela/TFC
 cd TriTrips
 
 2️⃣ Crear un entorno virtual
